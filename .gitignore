@@ -1,0 +1,28 @@
+# .gitignore
+# Standard Python ignores
+__pycache__/
+*.pyc
+*.log
+.venv/
+venv/
+env/
+.pipenv/
+Pipfile
+Pipfile.lock
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+
+# Standard Node.js ignores
+node_modules/
+dist/
+build/
+
+# Environment files (avoid committing secrets)
+# ignore all .env* files
+.env*
+# but do NOT ignore the example
+!.env.example
+# Don't commit secrets
+.cloudflared/
