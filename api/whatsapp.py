@@ -1,10 +1,11 @@
 # api/whatsapp.py
 
 import logging
-from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException, Depends
 
 from core.config import get_settings
-from models.whatsapp import WebhookPayload
+from api.dependencies import get_api_key
+from models.whatsapp import WebhookPayload, OutboundMessagePayload
 from utils.normalization import normalize_whatsapp_message
 from utils.logging import log_message_data
 from services.memory_store import memory_store
@@ -86,3 +87,27 @@ async def receive_message(request: Request, background_tasks: BackgroundTasks):
         # but log the error for debugging.
 
     return Response(status_code=200)
+
+# --- NEW ENDPOINT FOR N8N ---
+
+@router.post(
+    "/send",
+    summary="Send an outbound message",
+    description="Endpoint for internal services like n8n to send a WhatsApp message.",
+    dependencies=[Depends(get_api_key)] # This applies the security check!
+)
+async def send_from_internal(payload: OutboundMessagePayload):
+    """
+    Receives a recipient 'to' and 'text' and sends a WhatsApp message.
+    This endpoint is protected by an API key.
+    """
+    logger.info(f"Received request to send message to {payload.to} from internal service.")
+    try:
+        await send_whatsapp_message(to=payload.to, text=payload.text)
+        return {"status": "success", "message": f"Message queued to be sent to {payload.to}."}
+    except Exception as e:
+        logger.error(f"Failed to send message from internal endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while trying to send the message: {e}"
+        )

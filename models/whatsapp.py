@@ -39,3 +39,11 @@ class Entry(BaseModel):
 class WebhookPayload(BaseModel):
     object: str
     entry: List[Entry]
+
+# --- Models for Internal API Calls ---
+class OutboundMessagePayload(BaseModel):
+    """
+    Defines the structure for sending a message from an internal service like n8n.
+    """
+    to: str  # The recipient's WhatsApp ID (e.g., "16505551234")
+    text: str
