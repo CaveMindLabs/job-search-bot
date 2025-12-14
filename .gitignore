@@ -24,7 +24,7 @@ build/
 .env*
 # but do NOT ignore the example
 !.env.example
-# Don't commit secrets
+# Cloudflare Tunnel credentials (Don't commit secrets)
 .cloudflared/
 
 
