@@ -26,3 +26,7 @@ build/
 !.env.example
 # Don't commit secrets
 .cloudflared/
+
+
+# Others
+test_payload.json

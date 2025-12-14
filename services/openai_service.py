@@ -1,0 +1,60 @@
+# services/openai_service.py
+
+import logging
+from openai import AsyncOpenAI
+from .memory_store import MemoryStore
+from core.config import get_settings
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# System prompt to define the assistant's personality and role
+SYSTEM_PROMPT = """
+You are a friendly and helpful WhatsApp assistant.
+Your goal is to provide concise and accurate answers to user queries.
+Keep your responses brief and suitable for a chat interface.
+"""
+
+# Initialize settings and OpenAI client
+settings = get_settings()
+client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+async def generate_reply(user_id: str, user_text: str, memory_store: MemoryStore) -> str:
+    """
+    Generates a reply using OpenAI's Chat Completions API with conversation history.
+    """
+    try:
+        # 1. Fetch conversation history from the memory store
+        history = memory_store.get_history(user_id)
+
+        # 2. Construct the message list for the API call
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT}
+        ] + history + [
+            {"role": "user", "content": user_text}
+        ]
+
+        # 3. Call the OpenAI API
+        logger.info(f"Calling OpenAI for user: {user_id}")
+        response = await client.chat.completions.create(
+            model="gpt-4-turbo-preview",  # Or your preferred model
+            messages=messages,
+            temperature=0.7,
+        )
+
+        assistant_reply = response.choices[0].message.content
+
+        if not assistant_reply:
+             raise ValueError("Received an empty reply from OpenAI.")
+
+        # 4. Update memory with the new user message and assistant reply
+        memory_store.add_message(user_id, "user", user_text)
+        memory_store.add_message(user_id, "assistant", assistant_reply)
+
+        logger.info(f"Successfully generated reply for user: {user_id}")
+        return assistant_reply
+
+    except Exception as e:
+        logger.error(f"Error generating reply for user {user_id}: {e}")
+        # Return a generic error message to the user
+        return "I'm sorry, I encountered an issue and can't respond right now."
