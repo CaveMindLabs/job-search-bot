@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     # OpenAI settings
     OPENAI_API_KEY: str
+    # Add a default model name, which can be overridden by the .env file
+    OPENAI_MODEL_NAME: str = "gpt-5-mini"
 
     # Security
     INTERNAL_API_KEY: str

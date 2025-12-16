@@ -1,7 +1,8 @@
 # api/whatsapp.py
 
 import logging
-from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException, Depends
+from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException, Depends, Header
+from typing import Annotated
 
 from core.config import get_settings
 from api.dependencies import get_api_key
@@ -9,13 +10,35 @@ from models.whatsapp import WebhookPayload, OutboundMessagePayload
 from utils.normalization import normalize_whatsapp_message
 from utils.logging import log_message_data
 from services.memory_store import memory_store
-from services.openai_service import generate_reply
+from services.openai_service import generate_reply, list_available_models
 from services.whatsapp_service import send_whatsapp_message
 
 # Initialize router and logger
 router = APIRouter()
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+# --- Security Dependency ---
+async def verify_api_key(x_api_key: Annotated[str, Header()]):
+    """
+    Dependency to verify the internal API key.
+    """
+    if x_api_key != settings.INTERNAL_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+# Replace YOUR_INTERNAL_API_KEY with the actual key from your .env file
+
+# --- Get Available Models ---
+@router.get(
+    "/models", 
+    response_model=list[str],
+    dependencies=[Depends(verify_api_key)]
+)
+async def get_available_models():
+    """
+    Returns a list of available OpenAI chat models.
+    This endpoint is secured by the internal API key.
+    """
+    return await list_available_models()
 
 # --- Webhook Verification Endpoint ---
 @router.get("/webhook")
@@ -45,12 +68,29 @@ async def process_and_reply(normalized_data: dict):
     user_id = normalized_data["user_id"]
     user_text = normalized_data["text"]
 
-    # 1. Generate a reply from the LLM agent
-    reply_text = await generate_reply(user_id, user_text, memory_store)
+    # --- Model selection logic ---
+    model_to_use = None
+    message_to_process = user_text
 
+    if user_text.lower().startswith("/model "):
+        parts = user_text.split(" ", 2)
+        if len(parts) > 1:
+            potential_model = parts[1].strip()
+            # You might want to add validation here against the list of available models
+            model_to_use = potential_model
+            message_to_process = parts[2] if len(parts) > 2 else "Hi!" # Use the rest of the message
+            # Inform the user that the model has been changed for this request
+            await send_whatsapp_message(
+                to=user_id, 
+                text=f"🤖 Using model: `{model_to_use}` for this reply."
+            )
+
+    # 1. Generate a reply from the LLM agent, passing the chosen model
+    reply_text = await generate_reply(user_id, message_to_process, memory_store, model_name=model_to_use)
+    
     # 2. Send the reply back to the user via WhatsApp
     await send_whatsapp_message(to=user_id, text=reply_text)
-
+    
     # 3. Log the interaction
     log_message_data(normalized_data, reply_text)
 
