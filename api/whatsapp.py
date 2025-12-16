@@ -42,6 +42,8 @@ async def format_and_send_model_list(user_id: str):
             '`/Use model: "gpt-4o-mini"`\n\n'
             "You can choose from these available models:\n\n"
             f"- {formatted_list}\n\n"
+            "To select one, send a message like this:\n"
+            '`/Use model: "gpt-4o-mini"`\n\n'
         )
         await send_whatsapp_message(to=user_id, text=reply_text)
 

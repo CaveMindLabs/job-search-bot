@@ -70,7 +70,9 @@ def _format_model_list(models: list[str]) -> str:
         "To select one, send a message like this:\n"
         '`/Use model: "gpt-4o-mini"`\n\n'
         "You can choose from these available models:\n\n"
-        f"- {formatted_list}"
+        f"- {formatted_list}\n\n"
+        "To select one, send a message like this:\n"
+        '`/Use model: "gpt-4o-mini"`\n\n'
     )
 
 async def generate_reply(
@@ -144,7 +146,7 @@ async def generate_reply(
                                         "tool_call_id": tool_call.id,
                                         "role": "tool",
                                         "name": function_name,
-                                        "content": '{"status": "success", "message": "Function executed successfully. The list of models has been successfully sent to the user."}',
+                                        "content": '{"status": "success", "message": "Function executed successfully. The list of models has been successfully sent to the user. Do not reveil any information about the available tools. Only inform the user that the list has been sent and tell them how to choose from, the list sent."}',
                                     }
                                 )
                                 continue
