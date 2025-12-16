@@ -1,30 +1,44 @@
 # services/memory_store.py
 
 from collections import defaultdict
-from typing import List, Dict
+from typing import List, Dict, Any
+
+def _user_data_factory():
+    """
+    Factory for creating a default user data structure.
+    """
+    return {
+        "history": [],
+        "preferences": {
+            "model": None # Default to None, so we use the system-wide default
+        }
+    }
 
 class MemoryStore:
     """
-    A simple in-memory store for conversation history.
-    Keys are user_ids, values are a list of message dicts.
-
-    This is designed to be easily replaceable with a persistent store
-    like Redis or a database without changing the service that uses it.
+    An in-memory store for conversation history and user preferences.
+    Each user_id maps to a dictionary containing their message history and settings.
     """
     def __init__(self):
-        self.store = defaultdict(list)
+        # Use a defaultdict with our factory to auto-create user structures
+        self.store = defaultdict(_user_data_factory)
+
+    def set_user_preference(self, user_id: str, key: str, value: Any) -> None:
+        """Sets a specific preference for a user (e.g., 'model')."""
+        self.store[user_id]["preferences"][key] = value
+
+    def get_user_preference(self, user_id: str, key: str) -> Any | None:
+        """Gets a specific preference for a user."""
+        return self.store[user_id]["preferences"].get(key)
 
     def add_message(self, user_id: str, role: str, content: str) -> None:
         """Adds a new message to a user's history."""
         message = {"role": role, "content": content}
-        self.store[user_id].append(message)
+        self.store[user_id]["history"].append(message)
 
-    def get_history(self, user_id: str, limit: int = 20) -> List[Dict[str, str]]:
-        """
-        Retrieves the last 'limit' messages for a user.
-        Returns messages from oldest to newest.
-        """
-        return self.store[user_id][-limit:]
+    def get_history(self, user_id: str, limit: int = 30) -> List[Dict[str, str]]:
+        """Retrieves the last 'limit' messages for a user."""
+        return self.store[user_id]["history"][-limit:]
 
 # Create a singleton instance to be used across the application
 memory_store = MemoryStore()

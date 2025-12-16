@@ -133,3 +133,13 @@ This confirms that the application logic is working correctly from end to end.
 
 1.  Press `Ctrl + C` in Terminal 2 to stop the Cloudflare Tunnel.
 2.  Press `Ctrl + C` in Terminal 1 to stop the FastAPI server.
+
+
+
+## Testing the Model List Endpoint
+$headers = @{
+    "X-API-Key" = "EIqXHvdJmbF+Fetu4VaqXymgK+PoXBOd68mduJRQMp8="
+}
+Invoke-WebRequest -Uri https://whatsapp-agent.cavemindlabs.com/whatsapp/models -Method GET -Headers $headers -UseBasicParsing
+
+Invoke-WebRequest -Uri http://127.0.0.1:8000/whatsapp/models -Method GET -Headers $headers -UseBasicParsing

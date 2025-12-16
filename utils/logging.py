@@ -26,6 +26,6 @@ def log_message_data(normalized_data: dict, reply_text: str):
     IN_MEMORY_LOGS.append(log_entry)
     logging.getLogger(__name__).info(f"Logged message for user {normalized_data['user_id']}")
     # For debugging, you can print the last 5 logs
-    print("--- LATEST LOGS ---")
-    for log in IN_MEMORY_LOGS[-5:]:
-        print(log)
+    # print("--- LATEST LOGS ---")
+    # for log in IN_MEMORY_LOGS[-5:]:
+    #     print(log)

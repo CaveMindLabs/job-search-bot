@@ -1,6 +1,7 @@
 # api/whatsapp.py
 
 import logging
+import re
 from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException, Depends, Header
 from typing import Annotated
 
@@ -25,7 +26,24 @@ async def verify_api_key(x_api_key: Annotated[str, Header()]):
     """
     if x_api_key != settings.INTERNAL_API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
-# Replace YOUR_INTERNAL_API_KEY with the actual key from your .env file
+
+# --- HELPER FUNCTION ---
+async def format_and_send_model_list(user_id: str):
+    """
+    Fetches, formats, and sends the list of available models to the user.
+    """
+    models = await list_available_models()
+    if models:
+        # Sort models, maybe putting 'gpt-4o' variants at the top for prominence
+        models.sort(key=lambda x: ('gpt-4o' not in x, 'mini' in x, x))
+        formatted_list = "\n- ".join(models)
+        reply_text = (
+            "You can choose from these available models:\n\n"
+            f"- {formatted_list}\n\n"
+            "To select one, send a message like this:\n"
+            '`/Use model: "gpt-4o-mini"`'
+        )
+        await send_whatsapp_message(to=user_id, text=reply_text)
 
 # --- Get Available Models ---
 @router.get(
@@ -62,37 +80,48 @@ async def verify_webhook(
 # --- Task for Background Processing ---
 async def process_and_reply(normalized_data: dict):
     """
-    The main logic to process a message, get a reply, and send it back.
-    This runs in the background to avoid webhook timeouts.
+    Processes a message, handling commands for model selection and generating replies.
+    The logic for listing models is now handled by the LLM via tool calling.
     """
     user_id = normalized_data["user_id"]
-    user_text = normalized_data["text"]
+    user_text = normalized_data["text"].strip()
 
-    # --- Model selection logic ---
-    model_to_use = None
-    message_to_process = user_text
+    # --- Command Router ---
 
-    if user_text.lower().startswith("/model "):
-        parts = user_text.split(" ", 2)
-        if len(parts) > 1:
-            potential_model = parts[1].strip()
-            # You might want to add validation here against the list of available models
-            model_to_use = potential_model
-            message_to_process = parts[2] if len(parts) > 2 else "Hi!" # Use the rest of the message
-            # Inform the user that the model has been changed for this request
-            await send_whatsapp_message(
-                to=user_id, 
-                text=f"🤖 Using model: `{model_to_use}` for this reply."
-            )
+    # 1. Check for the model selection command: /Use model: "..."
+    # Accepts both single and double quotes
+    model_selection_match = re.match(r'/Use model: [\'"]([^\'"]+)[\'"]', user_text, re.IGNORECASE)
+    if model_selection_match:
+        model_name = model_selection_match.group(1)
+        # Optional: Validate if the model exists
+        available_models = await list_available_models()
+        if model_name in available_models:
+            memory_store.set_user_preference(user_id, 'model', model_name)
+            reply_text = f"✅ Model for this chat is now set to `{model_name}`."
+            await send_whatsapp_message(to=user_id, text=reply_text)
+            log_message_data(normalized_data, reply_text)
+        else:
+            error_text = f"❌ Sorry, the model `{model_name}` is not available."
+            await send_whatsapp_message(to=user_id, text=error_text)
+            # Proactively send the list of correct models
+            await format_and_send_model_list(user_id)
+            # We don't need to log the list sending, just the primary interaction
+            log_message_data(normalized_data, error_text + " [Sent model list]")
+        return # Stop processing after handling the command
 
-    # 1. Generate a reply from the LLM agent, passing the chosen model
-    reply_text = await generate_reply(user_id, message_to_process, memory_store, model_name=model_to_use)
-    
-    # 2. Send the reply back to the user via WhatsApp
-    await send_whatsapp_message(to=user_id, text=reply_text)
-    
-    # 3. Log the interaction
-    log_message_data(normalized_data, reply_text)
+    # 2. For all other messages, call the agent and let it handle tool use
+    # We pass `send_whatsapp_message` as the callback.
+    final_reply_text = await generate_reply(
+        user_id=user_id,
+        user_text=user_text,
+        send_message_callback=send_whatsapp_message
+    )
+
+    # Send the final LLM-generated reply
+    if final_reply_text:
+        await send_whatsapp_message(to=user_id, text=final_reply_text)
+
+    log_message_data(normalized_data, final_reply_text or "[No final reply text]")
 
 # --- Incoming Messages Endpoint ---
 @router.post("/webhook")
