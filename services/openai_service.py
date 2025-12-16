@@ -67,10 +67,10 @@ def _format_model_list(models: list[str]) -> str:
     models.sort(key=lambda x: ('gpt-4o' not in x, 'mini' in x, x))
     formatted_list = "\n- ".join(models)
     return (
-        "You can choose from these available models:\n\n"
-        f"- {formatted_list}\n\n"
         "To select one, send a message like this:\n"
-        '`/Use model: "gpt-4o-mini"`'
+        '`/Use model: "gpt-4o-mini"`\n\n'
+        "You can choose from these available models:\n\n"
+        f"- {formatted_list}"
     )
 
 async def generate_reply(
