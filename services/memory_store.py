@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 from typing import List, Dict, Any
+from datetime import datetime, timezone
 
 def _user_data_factory():
     """
@@ -32,12 +33,27 @@ class MemoryStore:
         return self.store[user_id]["preferences"].get(key)
 
     def add_message(self, user_id: str, role: str, content: str) -> None:
-        """Adds a new message to a user's history."""
-        message = {"role": role, "content": content}
+        """
+        Adds a new message to a user's history.
+        If the role is 'user', it prepends the current UTC timestamp to the content.
+        """
+        if role == "user":
+            timestamp_str = datetime.now(timezone.utc).isoformat()
+            # Embed the timestamp directly into the content string for the model to see.
+            final_content = f"[{timestamp_str}] {content}"
+        else:
+            final_content = content
+        message = {
+            "role": role,
+            "content": final_content,
+        }
         self.store[user_id]["history"].append(message)
 
     def get_history(self, user_id: str, limit: int = 30) -> List[Dict[str, str]]:
-        """Retrieves the last 'limit' messages for a user."""
+        """
+        Retrieves the last 'limit' messages for a user.
+        The history is already formatted correctly for the OpenAI API.
+        """
         return self.store[user_id]["history"][-limit:]
 
 # Create a singleton instance to be used across the application
