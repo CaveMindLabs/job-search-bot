@@ -98,6 +98,7 @@ async def process_and_reply(normalized_data: dict):
         # Optional: Validate if the model exists
         available_models = await list_available_models()
         if model_name in available_models:
+            memory_store.add_message(user_id, "user", user_text)
             memory_store.set_user_preference(user_id, 'model', model_name)
             reply_text = f"✅ Model for this chat is now set to `{model_name}`."
             await send_whatsapp_message(to=user_id, text=reply_text)

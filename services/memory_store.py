@@ -3,13 +3,24 @@
 from collections import defaultdict
 from typing import List, Dict, Any
 from datetime import datetime, timezone
+from core.config import get_settings
 
 def _user_data_factory():
     """
     Factory for creating a default user data structure.
+    This is called ONLY when a new user is created.
+    It now also initializes the chat history with a starting system message.
     """
+    initial_model = get_settings().OPENAI_MODEL_NAME
+    # Pre-populate the history with the initial context message
+    initial_history = [
+        {
+            "role": "assistant",
+            "content": f"(System notification: Conversation started with model {initial_model})"
+        }
+    ]
     return {
-        "history": [],
+        "history": initial_history,
         "preferences": {
             "model": None # Default to None, so we use the system-wide default
         }
@@ -25,8 +36,18 @@ class MemoryStore:
         self.store = defaultdict(_user_data_factory)
 
     def set_user_preference(self, user_id: str, key: str, value: Any) -> None:
-        """Sets a specific preference for a user (e.g., 'model')."""
+        """
+        Sets a specific preference for a user (e.g., 'model').
+        If the preference is 'model', it also adds a system notification to the history.
+        """
         self.store[user_id]["preferences"][key] = value
+        if key == "model":
+            timestamp_str = datetime.now(timezone.utc).isoformat()
+            self.add_message(
+                user_id, 
+                "assistant",
+                f"[{timestamp_str}] System notification: Model successfully updated on user request to {value})"
+            )
 
     def get_user_preference(self, user_id: str, key: str) -> Any | None:
         """Gets a specific preference for a user."""
