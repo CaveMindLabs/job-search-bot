@@ -14,10 +14,6 @@ dist/
 .mypy_cache/
 .pytest_cache/
 
-# Standard Node.js ignores
-node_modules/
-dist/
-build/
 
 # Environment files (avoid committing secrets)
 # ignore all .env* files
