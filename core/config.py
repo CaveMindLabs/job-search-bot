@@ -4,6 +4,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
+    # Environment setting
+    ENVIRONMENT: str = "development"
+
     # Meta WhatsApp settings
     VERIFY_TOKEN: str
     WHATSAPP_TOKEN: str
