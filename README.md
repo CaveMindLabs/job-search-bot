@@ -43,7 +43,7 @@ cd path\to\whatsapp-fastapi-agent
 cloudflared tunnel --config .\.cloudflared\config.yml run whatsapp-agent-tunnel
 ```
 
-The application will now be publicly accessible at `https://whatsapp-agent.cavemindlabs.com`.
+The application will now be publicly accessible at `https://whatsapp-agent.your_domain.com`.
 
 ---
 
@@ -140,6 +140,6 @@ This confirms that the application logic is working correctly from end to end.
 $headers = @{
     "X-API-Key" = "EIqXHvdJmbF+Fetu4VaqXymgK+PoXBOd68mduJRQMp8="
 }
-Invoke-WebRequest -Uri https://whatsapp-agent.cavemindlabs.com/whatsapp/models -Method GET -Headers $headers -UseBasicParsing
+Invoke-WebRequest -Uri https://whatsapp-agent.your_domain.com/whatsapp/models -Method GET -Headers $headers -UseBasicParsing
 
 Invoke-WebRequest -Uri http://127.0.0.1:8000/whatsapp/models -Method GET -Headers $headers -UseBasicParsing

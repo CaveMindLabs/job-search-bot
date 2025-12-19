@@ -6,7 +6,7 @@ This endpoint bypasses the LLM and memory services and directly uses the WhatsAp
 
 ## Prerequisites
 
-1.  **Running Agent**: The FastAPI server must be running and publicly accessible via its URL (e.g., `https://whatsapp-agent.cavemindlabs.com`).
+1.  **Running Agent**: The FastAPI server must be running and publicly accessible via its URL (e.g., `https://whatsapp-agent.your_domain.com`).
 2.  **API Key**: You must have the `INTERNAL_API_KEY` value from your project's `.env` file. This is the secret key used to authorize your n8n requests.
 
 ---
@@ -20,7 +20,7 @@ In your n8n workflow, add or select an "HTTP Request" node. Configure it with th
 -   **Method**: `POST`
 -   **URL**: Enter the full URL to the send endpoint.
     ```
-    https://whatsapp-agent.cavemindlabs.com/whatsapp/send
+    https://whatsapp-agent.your_domain.com/whatsapp/send
     ```
 
 ### Step 2: Authentication
@@ -33,7 +33,7 @@ This is the most critical step to ensure your requests are authorized.
 4.  A window will pop up to configure the credential. Fill it out as follows:
     -   **Name**: `X-API-Key` (This **must** be exact).
     -   **Value**: Paste your `INTERNAL_API_KEY` from the `.env` file.
-    -   **(Optional but Recommended)** Under **Allowed HTTP Request Domains**, select `Specific Domains` and enter `whatsapp-agent.cavemindlabs.com` to ensure this key can only be used for this service.
+    -   **(Optional but Recommended)** Under **Allowed HTTP Request Domains**, select `Specific Domains` and enter `whatsapp-agent.your_domain.com` to ensure this key can only be used for this service.
 5.  Click **Save**. The credential is now saved in n8n for future use.
 
 > **Security Note:** This credential securely stores your API key within n8n. The `X-API-Key` header will be automatically added to every request made by this node.
@@ -70,7 +70,7 @@ While n8n is usually smart enough to add the correct `Content-Type` header when 
 When complete, your node settings should look like this:
 
 -   **Method**: `POST`
--   **URL**: `https://whatsapp-agent.cavemindlabs.com/whatsapp/send`
+-   **URL**: `https://whatsapp-agent.your_domain.com/whatsapp/send`
 -   **Authentication**: `Generic Credential Type` -> `Header Auth` (using your saved credential)
 -   **Send Body**: `ON`
     -   **Body Content Type**: `JSON`

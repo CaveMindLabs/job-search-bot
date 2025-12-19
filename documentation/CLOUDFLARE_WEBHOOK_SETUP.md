@@ -4,7 +4,7 @@ This document details the process of creating a persistent, public-facing URL fo
 
 ## Goal
 
-To expose the local FastAPI server running on `http://localhost:8000` to the public internet via a permanent subdomain, `https://whatsapp-agent.cavemindlabs.com`, so it can receive webhooks from Meta's WhatsApp Cloud API.
+To expose the local FastAPI server running on `http://localhost:8000` to the public internet via a permanent subdomain, `https://whatsapp-agent.your_domain.com`, so it can receive webhooks from Meta's WhatsApp Cloud API.
 
 ---
 
@@ -72,12 +72,12 @@ We will store the tunnel's configuration locally within this project for portabi
     # The full, absolute path to the credentials file.
     # Using a full path with single quotes is the most robust method on Windows,
     # as it prevents issues with spaces and special characters like backslashes.
-    credentials-file: 'C:\Users\gilda\OneDrive\Documents\My_Projects\AI_Based_Projects\whatsapp-fastapi-agent\.cloudflared\cred.json'
+    credentials-file: 'C:\Users\username\path_to_project\whatsapp-fastapi-agent\.cloudflared\cred.json'
 
     # Ingress rules define how traffic is routed
     ingress:
       # Rule 1: Route traffic from your public hostname to your local server
-      - hostname: whatsapp-agent.cavemindlabs.com
+      - hostname: whatsapp-agent.your_domain.com
         service: http://localhost:8000
     
       # Rule 2: A mandatory catch-all that returns a 404 for any other traffic
@@ -89,7 +89,7 @@ We will store the tunnel's configuration locally within this project for portabi
 Create a `CNAME` record in your Cloudflare DNS to point your public subdomain to the tunnel.
 
 ```bash
-cloudflared tunnel route dns whatsapp-agent-tunnel whatsapp-agent.cavemindlabs.com
+cloudflared tunnel route dns whatsapp-agent-tunnel whatsapp-agent.your_domain.com
 ```
 
 ### Step 5: Configure the Meta Webhook (Final Connection)
@@ -100,7 +100,7 @@ This is the final step to link WhatsApp to your new endpoint. This only needs to
 2.  Navigate to **WhatsApp -> Configuration**.
 3.  Click **Edit** on the Webhook section.
 4.  Set the following values:
-    *   **Callback URL**: `https://whatsapp-agent.cavemindlabs.com/whatsapp/webhook`
+    *   **Callback URL**: `https://whatsapp-agent.your_domain.com/whatsapp/webhook`
     *   **Verify token**: The secret token from your project's `.env` file.
 5.  Click **Verify and save**. You should see a `GET` request in your running terminals, confirming the connection is successful.
 
@@ -116,7 +116,7 @@ This terminal runs the Python application.
 
 ```bash
 # Navigate to the project directory
-cd C:\Users\gilda\OneDrive\Documents\My_Projects\AI_Based_Projects\whatsapp-fastapi-agent
+cd C:\Users\username\path_to_project\whatsapp-fastapi-agent
 
 # Activate the conda environment
 conda activate whatsapp-agent
@@ -131,7 +131,7 @@ This terminal runs the `cloudflared` client, which connects to Cloudflare and fo
 
 ```bash
 # Navigate to the project directory
-cd C:\Users\gilda\OneDrive\Documents\My_Projects\AI_Based_Projects\whatsapp-fastapi-agent
+cd C:\Users\username\path_to_project\whatsapp-fastapi-agent
 
 # Run the tunnel using the project's local config file
 cloudflared tunnel --config .\.cloudflared\config.yml run whatsapp-agent-tunnel
