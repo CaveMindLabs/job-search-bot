@@ -60,7 +60,7 @@ We will store the tunnel's configuration locally within this project for portabi
 >
 > # Cloudflare Tunnel credentials
 > /.cloudflared
-> `
+> ```
 
 3.  **Create the local `config.yml` file:**
     Create a file named `config.yml` inside the `.\.cloudflared` directory and add the following content.

@@ -26,7 +26,7 @@ cd path\to\whatsapp-fastapi-agent
 conda activate whatsapp-agent
 
 # Start the server
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8000
 ```
 
 The server will be running on `http://127.0.0.1:8000`.
