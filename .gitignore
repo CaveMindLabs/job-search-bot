@@ -22,11 +22,11 @@ dist/
 !.env.example
 
 # Cloudflare Tunnel credentials (Don't commit secrets)
-# Ignore the entire directory first
-.cloudflared/
+# Ignore all contents (*) of the .cloudflared directory
+.cloudflared/*
 
-# Now, make an exception for ONLY the config file.
-# The leading "!" negates the previous rule for this specific path.
+# BUT, make an exception and DO NOT ignore the config.yml file.
+# This works because we are ignoring the contents, not the directory itself.
 !.cloudflared/config.yml
 
 
