@@ -73,7 +73,7 @@ The new user needs permission to access your App and your WhatsApp account.
 #### Part A: Assign the App
 
 1.  In the "Select asset type" column on the left, select **Apps**.
-2.  In the middle "Select assets" column, check the box next to your application (e.g., `n8n-first-app`).
+2.  In the middle "Select assets" column, check the box next to your application (e.g., `fastapi-first-app`).
 3.  In the right "Assign permissions" column, under **Full Control**, enable the toggle for **Manage app**.
 
 #### Part B: Assign the WhatsApp Account
@@ -89,7 +89,7 @@ This is the final step where you create the token string itself.
 
 1.  You should now be back on the System Users page. With your `whatsapp_agent_user` selected, click the **Generate new token** button.
 2.  A multi-step dialog will appear. Follow it carefully:
-    -   **Step 1: Select app:** Choose your app (e.g., `n8n-first-app`) from the dropdown menu. Click `Next`.
+    -   **Step 1: Select app:** Choose your app (e.g., `fastapi-first-app`) from the dropdown menu. Click `Next`.
     -   **Step 2: Set expiration:** Choose **60 days**. Click `Next`.
     -   **Step 3: Assign permissions:** This is the most critical step. Check the boxes for the following two permissions:
         -   `whatsapp_business_management`
