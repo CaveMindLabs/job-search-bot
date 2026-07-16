@@ -1,122 +1,89 @@
 # Project Architecture and Execution Flow
 
-This document provides a detailed look at the project's structure and the step-by-step execution flow for handling incoming WhatsApp messages.
+This document details the project's modular directory structure and the background execution flow for the AI pipeline.
 
----
+## 1. Directory Structure
 
-## 1. Project Structure
+The project separates OS-level operations, server routing, and LLM logic into strict domains.
 
-The project follows a standard FastAPI layout, separating concerns into distinct modules for clarity and maintainability.
-
-```plaintext
 whatsapp-fastapi-agent/
-├── .cloudflared/      # (Local) Cloudflare Tunnel configuration.
-├── api/               # FastAPI routers and dependencies.
-├── core/              # Core application settings and configuration.
-├── documentation/     # Guides for setup, integration, and architecture.
-├── models/            # Pydantic models for data validation.
-├── services/          # Business logic (OpenAI, WhatsApp, Memory).
-├── utils/             # Helper utilities (logging, normalization).
-├── .env.example       # Environment variable template.
-├── environment.yml    # Conda environment definition.
-├── main.py            # Main FastAPI application entry point.
-└── README.md          # Project overview and setup instructions.
-```
+├── api/
+│   ├── whatsapp.py             # Webhook endpoints and payload validation
+│   ├── message_processor.py    # Dynamic intent routing, caching intercepts, and sanity checks
+│   ├── cache_manager.py        # Logic for reading/writing ephemeral session data
+│   └── cache_store.json        # Local JSON storage for active session memory
+├── agents/
+│   ├── config.py               # Central LLM (Gemini) configuration
+│   ├── agent_definitions.py    # Prompts, roles, tools, and ReAct loop micro-delays
+│   ├── utility_agents.py       # Intent parsing, database editing, and feedback loops
+│   ├── pipeline_generate.py    # End-to-end CV generation (Strategist, Tailor, Gatekeeper)
+│   ├── pipeline_prospect.py    # Job prospecting bypassing ReAct via native Serper search
+│   ├── pipeline_review.py      # ATS scoring against extracted job descriptions
+│   ├── pipeline_match.py       # Selecting the best existing CV for a new job role
+│   ├── pipeline_network.py     # Finding recruiters and drafting outreach messages
+│   └── pipeline_keywords.py    # Lightweight JD keyword extraction
+├── services/
+│   ├── file_manager.py         # Standard OS file reading (CV Retrieval)
+│   ├── memory_store.py         # In-memory preference state (e.g., active model selection)
+│   └── whatsapp_service.py     # Outbound Meta Graph API messaging
+├── utils/
+│   ├── api_utils.py            # Centralized API backoff (Tenacity) and fail-fast logic
+│   ├── url_validator.py        # Regex extraction and HTTP validation for job URLs
+│   └── logging.py              # Centralized event and performance logging
+├── scripts/
+│   └── memory_builder.py       # Manual script to sync career_master.json to ChromaDB
+├── C-core/                     # Static Knowledge Base
+│   ├── career_master.json      # Raw career history and metrics
+│   ├── qualifications.md       # Target roles, geographic constraints, and hard skills
+│   ├── guidelines.md           # Writing style, tone, and search constraints
+│   ├── hallucinations.md       # Strict blocklist to prevent AI fabrications
+│   └── CV_Vault/               # Base Markdown templates (Dev_Base.md, Management_Base.md)
+├── O-output/                   # Automatically generated final Markdown CVs
+│   ├── DEV/                    # Output routing for engineering/technical roles
+│   └── MGMT/                   # Output routing for operational/management roles
+├── chroma_db/                  # Local vector database (Rules, History, Company Values)
+├── main.py                     # FastAPI application entry point
+├── requirements.txt            # Python dependencies
+├── start_agent.bat             # Startup script for Uvicorn server and ngrok tunnel
+└── .env                        # Secret keys and tokens
 
----
+## 2. Execution Flow & Async Processing
+Because Meta requires webhooks to be acknowledged immediately, the application heavily utilizes FastAPI's BackgroundTasks[cite: 16].
 
-## 2. Execution Flow
+The Entry Point: WhatsApp sends a POST request to /whatsapp/webhook[cite: 16].
 
-The application processes messages in the background to ensure the webhook responds to Meta's servers immediately. There are two primary flows depending on whether the LLM decides to use a tool.
+Validation & Acknowledgment: api/whatsapp.py validates the payload and returns HTTP 200 OK to Meta immediately to prevent retry loops[cite: 16].
 
-### Flow A: Standard Chat Reply (No Tool Use)
+Background Processing: The AI logic is pushed to process_and_reply running safely in the background[cite: 16].
 
-This is the most common path, where a user sends a message and receives a direct conversational reply.
+3. Dynamic Intent Routing
+The Router Agent parses incoming natural language and directs it to the appropriate backend pipeline[cite: 16]:
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant WhatsApp
-    participant Cloudflare
-    participant FastAPI
-    participant BackgroundTask
-    participant OpenAIService
-    participant MemoryStore
-    participant WhatsAppService
+SEARCH_JOBS: Triggers run_job_prospector() utilizing native Python search APIs[cite: 16].
 
-    User->>+WhatsApp: Sends "Hello, how are you?"
-    WhatsApp->>+Cloudflare: POST /whatsapp/webhook
-    Cloudflare->>+FastAPI: Forwards POST request to localhost:8000
+CV: Triggers run_job_search_pipeline() for end-to-end generation[cite: 16].
 
-    Note over FastAPI: Endpoint `/whatsapp/webhook` in `api/whatsapp.py` receives the request.
+REVIEW_CV: Triggers run_cv_review_pipeline() to score the CV against the JD[cite: 16].
 
-    FastAPI->>FastAPI: 1. Parses and validates payload with Pydantic `WebhookPayload`.
-    FastAPI->>FastAPI: 2. Normalizes the message data via `utils.normalization`.
-    FastAPI->>BackgroundTask: 3. Schedules `process_and_reply` to run in the background.
-    FastAPI-->>-Cloudflare: 4. Immediately returns HTTP 200 OK.
-    Cloudflare-->>-WhatsApp: HTTP 200 OK
+FIND_BEST_CV: Triggers run_best_cv_match_pipeline() to evaluate the JD against indexed CV summaries[cite: 16].
 
-    Note over BackgroundTask: The background task now runs independently.
+FEEDBACK: Triggers run_close_the_loop() to extract learned rules[cite: 16].
 
-    BackgroundTask->>OpenAIService: Calls `generate_reply` with user message.
-    OpenAIService->>MemoryStore: 1. `get_user_preference()` (to get the model).
-    OpenAIService->>MemoryStore: 2. `get_history()` (to get conversation context).
-    OpenAIService->>+OpenAI API: 3. Makes API call with system prompt + history + user message.
-    OpenAI API-->>-OpenAIService: Returns a standard chat completion (e.g., "I'm doing well!").
+DB_MANAGE: Triggers manage_database() for ChromaDB edits[cite: 16].
 
-    OpenAIService->>MemoryStore: 4. `add_message()` (to save user's "Hello...").
-    OpenAIService->>MemoryStore: 5. `add_message()` (to save assistant's "I'm doing well!...").
-    OpenAIService-->>BackgroundTask: Returns the final reply text.
+RETRIEVE: Bypasses agents entirely and uses file_manager.py to send an existing file[cite: 16].
 
-    BackgroundTask->>WhatsAppService: Calls `send_whatsapp_message` with reply.
-    WhatsAppService->>+WhatsApp: Sends "I'm doing well!" message via Graph API.
-    WhatsApp-->>-User: Delivers reply message.
-    
-    Note over BackgroundTask: Finally, it logs the interaction.
-    BackgroundTask->>BackgroundTask: Calls `utils.logging.log_message_data`.
-```
+4. Advanced System Design: Memory & Optimization
+To ensure enterprise-grade stability and speed, the system employs several optimization layers:
 
-### Flow B: Chat Reply with Tool Use (e.g., "what models can I use?")
+Persistent Vector Database (ChromaDB):
 
-This flow is triggered when the user's query causes the LLM to call the `list_available_models` tool. It involves two API calls to OpenAI.
+career_rules: Stores rules generated by the Feedback Analyzer. Read by the Prospector and Strategist[cite: 16].
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant WhatsApp
-    participant FastAPI
-    participant BackgroundTask
-    participant OpenAIService
-    participant WhatsAppService
+company_values: Stores corporate culture data found by the Culture Scout. Read by the Strategist to align vocabulary[cite: 16].
 
-    User->>+WhatsApp: Sends "what models can I use?"
-    WhatsApp-->>FastAPI: (Webhook forwarding via Cloudflare as before...)
-    FastAPI->>BackgroundTask: Schedules `process_and_reply` and returns 200 OK.
+career_history: Stores chunks from career_master.json. Read by the Strategist to select relevant bullet points[cite: 16].
 
-    Note over BackgroundTask: Background task begins execution.
+Cache Intercepts: A session-based JSON cache stores extracted Job Descriptions and search queries. Pipelines check the cache before executing heavy web-scraping agents, drastically reducing latency and API usage.
 
-    BackgroundTask->>OpenAIService: Calls `generate_reply` with user message.
-    OpenAIService->>+OpenAI API: **[First Call]** Sends prompt. The LLM decides to call the `list_available_models` tool.
-    OpenAI API-->>-OpenAIService: Returns a response containing a `tool_calls` object.
-
-    Note over OpenAIService: Detects the tool call request.
-
-    OpenAIService->>OpenAIService: 1. Executes the local Python function `list_available_models()`.
-    OpenAIService->>OpenAIService: 2. Formats the returned list into a user-friendly string.
-    OpenAIService->>WhatsAppService: 3. **Sends list immediately** via `send_message_callback`.
-    WhatsAppService->>+WhatsApp: Sends formatted model list to the user.
-    WhatsApp-->>-User: Delivers the list of models.
-
-    OpenAIService->>+OpenAI API: **[Second Call]** Sends the original history PLUS the tool execution result (e.g., "Function executed successfully").
-    OpenAI API-->>-OpenAIService: Returns a final conversational reply (e.g., "I've just sent you the list of available models.").
-
-    OpenAIService->>OpenAIService: 4. Updates memory with user message and final assistant reply.
-    OpenAIService-->>BackgroundTask: Returns the final conversational reply.
-    
-    BackgroundTask->>WhatsAppService: Calls `send_whatsapp_message` with the final reply.
-    WhatsAppService->>+WhatsApp: Sends "I've just sent you the list..."
-    WhatsApp-->>-User: Delivers the second, final message.
-
-    Note over BackgroundTask: Logs the full interaction.
-    BackgroundTask->>BackgroundTask: Calls `utils.logging.log_message_data`.
-```
+Decoupled Native Execution: Search functionality is decoupled from the ReAct loop. Web searches are executed natively in Python via the requests library, verified via the url_validator, and passed to the LLM as static context to ensure maximum stability.

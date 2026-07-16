@@ -1,0 +1,113 @@
+[
+    {
+        "id": "Role_A_MGMT",
+        "category": "Experience",
+        "timeframe": "[YYYY]-[YYYY]",
+        "text": "• [Achievement or responsibility, with a measurable result.]\n• [Second bullet: scope, tools, or team size.]\n• [Third bullet: outcome or impact.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Role_A_DEV",
+        "category": "Experience",
+        "timeframe": "[YYYY]-[YYYY]",
+        "text": "• [Achievement or responsibility, with a measurable result.]\n• [Second bullet: scope, tools, or team size.]\n• [Third bullet: outcome or impact.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Role_B_MGMT",
+        "category": "Experience",
+        "timeframe": "[YYYY]-[YYYY]",
+        "text": "• [Achievement or responsibility, with a measurable result.]\n• [Second bullet: scope, tools, or team size.]\n• [Third bullet: outcome or impact.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Role_B_DEV",
+        "category": "Experience",
+        "timeframe": "[YYYY]-[YYYY]",
+        "text": "• [Achievement or responsibility, with a measurable result.]\n• [Second bullet: scope, tools, or team size.]\n• [Third bullet: outcome or impact.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Role_C_MGMT",
+        "category": "Experience",
+        "timeframe": "[YYYY]-[YYYY]",
+        "text": "• [Achievement or responsibility, with a measurable result.]\n• [Second bullet: scope, tools, or team size.]\n• [Third bullet: outcome or impact.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Project_A_DEV",
+        "category": "Projects",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Project_A_MGMT",
+        "category": "Projects",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Project_B_DEV",
+        "category": "Projects",
+        "app_link": "https://[your-app-url]",
+        "github_link": "https://github.com/[your-handle]/[repo]",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Project_B_MGMT",
+        "category": "Projects",
+        "app_link": "https://[your-app-url]",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Project_C_DEV",
+        "category": "Projects",
+        "github_link": "https://github.com/[your-handle]/[repo]",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Project_D_DEV",
+        "category": "Projects",
+        "text": "[One or two sentences describing the project, the stack used, and what it demonstrates.]",
+        "track": "DEV"
+    },
+    {
+        "id": "PROFILE_MGMT",
+        "category": "Profile",
+        "text": "[Two or three sentences summarising your background and what you are targeting.]",
+        "track": "MGMT"
+    },
+    {
+        "id": "PROFILE_DEV",
+        "category": "Profile",
+        "text": "[Two or three sentences summarising your background and what you are targeting.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Skills_DEV",
+        "category": "Skills",
+        "text": "**Languages:** [...]\n**Frameworks:** [...]\n**Tools:** [...]",
+        "track": "DEV"
+    },
+    {
+        "id": "Skills_MGMT",
+        "category": "Skills",
+        "text": "**Languages:** [...]\n**Frameworks:** [...]\n**Tools:** [...]",
+        "track": "MGMT"
+    },
+    {
+        "id": "Education_DEV",
+        "category": "Education",
+        "text": "[Degree], [Institution]. [Relevant coursework or focus areas.]",
+        "track": "DEV"
+    },
+    {
+        "id": "Education_MGMT",
+        "category": "Education",
+        "text": "[Degree], [Institution]. [Relevant coursework or focus areas.]",
+        "track": "MGMT"
+    }
+]

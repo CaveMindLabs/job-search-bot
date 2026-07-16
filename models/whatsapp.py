@@ -15,7 +15,7 @@ class Message(BaseModel):
 
 class Contact(BaseModel):
     wa_id: str
-    profile: dict
+    profile: Optional[dict] = None
 
 class Metadata(BaseModel):
     display_phone_number: str

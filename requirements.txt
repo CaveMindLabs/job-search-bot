@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+httpx
+pydantic
+python-dotenv
+crewai
+google-generativeai
+chromadb
+crewai[google-genai]
+crewai-tools
+tenacity

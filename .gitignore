@@ -1,34 +1,15 @@
-# .gitignore
-# Standard Python ignores
+# Environments
+.env
+.venv/
+env/
+
+# Databases & Cache
+chroma_db/
+api/cache_store.json
+
+# Generated Output (Optional: keeps your repo clean of generated CVs)
+O-output/
+
+# Python Cache
 __pycache__/
 *.pyc
-*.log
-.venv/
-venv/
-env/
-.pipenv/
-Pipfile
-Pipfile.lock
-build/
-dist/
-.mypy_cache/
-.pytest_cache/
-
-
-# Environment files (avoid committing secrets)
-# ignore all .env* files
-.env*
-# but do NOT ignore the example
-!.env.example
-
-# Cloudflare Tunnel credentials (Don't commit secrets)
-# Ignore all contents (*) of the .cloudflared directory
-.cloudflared/*
-
-# BUT, make an exception and DO NOT ignore the config.yml file.
-# This works because we are ignoring the contents, not the directory itself.
-!.cloudflared/config.yml
-
-
-# Others
-test_payload.json

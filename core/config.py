@@ -16,10 +16,10 @@ class Settings(BaseSettings):
     # Memory settings
     MEMORY_HISTORY_LIMIT: int = 20 # Add a default value
 
-    # OpenAI settings
-    OPENAI_API_KEY: str
-    # Add a default model name, which can be overridden by the .env file
-    OPENAI_MODEL_NAME: str = "gpt-4o-mini"
+    # Google AI Studio settings
+    GEMINI_API_KEY: str = ""
+
+    SERPER_API_KEY: str = ""
 
     # Security
     INTERNAL_API_KEY: str
