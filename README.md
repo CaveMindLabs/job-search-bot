@@ -40,8 +40,8 @@ You must have the following accounts and tools installed:
 ### 2. Local Installation
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/your-username/whatsapp-job-agent.git](https://github.com/your-username/whatsapp-job-agent.git)
-   cd whatsapp-job-agent
+   git clone https://github.com/CaveMindLabs/job-search-bot.git
+   cd job-search-bot
 
 Create and activate a virtual environment:
    python -m venv .venv
@@ -101,9 +101,6 @@ Once online, send a natural language message to your WhatsApp bot.
 *   **Pipeline:** Router -> File Manager Service (Sends file to WhatsApp)
 
 
-Developer: Matan Eshel
-Engineered to bridge the gap between complex LLM orchestration and seamless daily operations.
-
 ---
 
 ## Project Lineage and Attribution
@@ -121,6 +118,11 @@ with its six pipelines, the `C-core/` career engine, the file and cache services
 was written by **Matan Eshel** ([@Matan159](https://github.com/Matan159)). His
 commits are preserved here with their original authorship, so he appears as a
 contributor to this repository.
+
+> Engineered to bridge the gap between complex LLM orchestration and seamless
+> daily operations.
+>
+> Developer: Matan Eshel
 
 **This consolidation** brings the two together under CaveMindLabs, with one
 change: the `C-core/` directory originally contained a real person's career data
