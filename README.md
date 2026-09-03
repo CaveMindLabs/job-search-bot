@@ -103,3 +103,43 @@ Once online, send a natural language message to your WhatsApp bot.
 
 Developer: Matan Eshel
 Engineered to bridge the gap between complex LLM orchestration and seamless daily operations.
+
+---
+
+## Project Lineage and Attribution
+
+This repository has three layers, and it is worth being explicit about which is
+which.
+
+**The WhatsApp / FastAPI foundation** comes from
+[CaveMindLabs/whatsapp-fastapi-agent](https://github.com/CaveMindLabs/whatsapp-fastapi-agent):
+the webhook handling, message processing, OpenAI service layer, per-user memory,
+Cloudflare Tunnel setup and the surrounding documentation.
+
+**The job-search and CV-generation system** on top of it, the `agents/` package
+with its six pipelines, the `C-core/` career engine, the file and cache services,
+was written by **Matan Eshel** ([@Matan159](https://github.com/Matan159)). His
+commits are preserved here with their original authorship, so he appears as a
+contributor to this repository.
+
+**This consolidation** brings the two together under CaveMindLabs, with one
+change: the `C-core/` directory originally contained a real person's career data
+(CV text, employment history, education, contact details). That has been replaced
+throughout the history with a **generic template**. Nobody's personal profile
+ships in this repo.
+
+### Using C-core
+
+`C-core/` is where you put your own career data. Every value is a placeholder:
+
+- `CV_Vault/Dev_Base.md` and `CV_Vault/Management_Base.md`: your CV skeletons.
+  Replace the header line and the section titles; leave the `[[TOKEN]]` markers
+  in place, the pipeline fills those in.
+- `career_master.json`: your experience, projects, skills and education, each
+  tagged `DEV` or `MGMT`. The generator only pulls entries matching the track.
+- `qualifications.md`: ground truth. The agents will not claim anything absent
+  from this file.
+- `guidelines.md`: tone, length, geography, formatting rules.
+- `hallucinations.md`: hard "never say this" constraints.
+
+Run `scripts/memory_builder.py` after editing `career_master.json`.
